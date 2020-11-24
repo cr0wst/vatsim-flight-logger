@@ -17,11 +17,12 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
 
             val potentialFlight = retrieveExistingFlight(it)
             when {
-                potentialFlight == null -> {
-                    registerNewFlight(it, metadata)
-                }
+                potentialFlight == null -> registerNewFlight(it, metadata)
                 potentialFlight.status == FlightEntity.Status.IN_FLIGHT -> {
                     registerLanding(potentialFlight, it, metadata)
+                }
+                potentialFlight.status == FlightEntity.Status.DEPARTING -> {
+                    changeDeparture(potentialFlight, it, metadata)
                 }
             }
         }
@@ -49,6 +50,18 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
         flightEntity.endTime = metadata.updateTimestamp
         flightEntity.status = FlightEntity.Status.LANDED
         log.info { "Registered Landing: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} departing ${flightEntity.startLocation.code}" }
+        return flightRepository.save(flightEntity)
+    }
+
+    private fun changeDeparture(
+        flightEntity: FlightEntity,
+        clientWithLocation: ClientWithLocation,
+        metadata: Metadata
+    ): FlightEntity {
+        flightEntity.startLocation = clientWithLocation.airport
+        flightEntity.startTime = metadata.updateTimestamp
+        flightEntity.status = FlightEntity.Status.LANDED
+        log.info { "Changed departure location for: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} departing ${flightEntity.startLocation.code}" }
         return flightRepository.save(flightEntity)
     }
 

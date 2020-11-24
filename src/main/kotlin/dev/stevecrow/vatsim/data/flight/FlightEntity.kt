@@ -25,7 +25,7 @@ class FlightEntity(
     var endTime: LocalDateTime? = null,
 
     @ManyToOne
-    val startLocation: AirportEntity,
+    var startLocation: AirportEntity,
 
     @ManyToOne
     var endLocation: AirportEntity? = null,
