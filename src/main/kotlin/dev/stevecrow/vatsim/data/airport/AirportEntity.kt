@@ -1,7 +1,6 @@
 package dev.stevecrow.vatsim.data.airport
 
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -40,10 +39,4 @@ class AirportEntity(
 )
 
 @Repository
-interface AirportRepository : JpaRepository<AirportEntity, Long> {
-    @Query(
-        value = "SELECT * FROM airports ORDER BY ((longitude_deg - ?2) ^ (2)) + ((latitude_deg - ?1) ^ (2)) LIMIT 1",
-        nativeQuery = true
-    )
-    fun findNearestAirport(latitude: Float, longitude: Float): AirportEntity
-}
+interface AirportRepository : JpaRepository<AirportEntity, Long>
