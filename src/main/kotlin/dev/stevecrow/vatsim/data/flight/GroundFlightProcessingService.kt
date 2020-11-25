@@ -20,7 +20,7 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
                 potentialFlight == null -> {
                     registerNewFlight(it, metadata)
                 }
-                potentialFlight.status == FlightEntity.Status.IN_FLIGHT -> {
+                potentialFlight.status == FlightEntity.Status.IN_FLIGHT && potentialFlight.endLocation?.id == it.airport.id -> {
                     registerLanding(potentialFlight, it, metadata)
                 }
                 potentialFlight.status == FlightEntity.Status.DEPARTING -> {
