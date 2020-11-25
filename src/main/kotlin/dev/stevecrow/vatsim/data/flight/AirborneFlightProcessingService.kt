@@ -23,21 +23,10 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
                 if (hasFlightDeparted(potentialFlight, it)) {
                     registerTakeoff(potentialFlight, it.airport, metadata.updateTimestamp)
                 } else if (hasInFlightLocationChanged(potentialFlight, it)) {
+                    // TODO: Work out how to tell if a client is disconnecting and reconnecting in the air
+                    // Picking up all clients in the air and registering them is a bit buggy.
                     updateAirborneLocation(potentialFlight, it.airport, metadata.updateTimestamp)
                 }
-            } else {
-                // If somebody connects in the air or we first pick them up in the air, we'll start them there.
-                // This is probably unreliable.
-                val flight = FlightEntity(
-                    callsign = it.client.callsign,
-                    cid = it.client.cid,
-                    realname = it.client.realname,
-                    startTime = metadata.updateTimestamp,
-                    startLocation = it.airport,
-                    status = FlightEntity.Status.DEPARTING
-                )
-                log.info { "[In Flight Discovery] ${flight.callsign}:${flight.cid}- ${flight.startLocation.name} (${flight.startLocation.code})" }
-                registerTakeoff(flight, it.airport, metadata.updateTimestamp)
             }
         }
     }
