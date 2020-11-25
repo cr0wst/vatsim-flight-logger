@@ -2,7 +2,7 @@ package dev.stevecrow.vatsim.data.client
 
 import dev.stevecrow.vatsim.data.airport.AirportEntity
 
-private const val ALT_BUFFER: Int = 500
+private const val ALT_BUFFER: Int = 100
 
 data class ClientWithLocation(
     val client: Client,
