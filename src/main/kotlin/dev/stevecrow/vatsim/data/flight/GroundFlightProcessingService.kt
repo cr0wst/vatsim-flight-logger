@@ -34,6 +34,7 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
         val flightEntity = FlightEntity(
             callsign = clientWithLocation.client.callsign,
             cid = clientWithLocation.client.cid,
+            realname = clientWithLocation.client.realname,
             startTime = metadata.updateTimestamp,
             startLocation = clientWithLocation.airport,
             status = FlightEntity.Status.DEPARTING

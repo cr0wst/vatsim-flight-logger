@@ -21,6 +21,7 @@ class FlightEntity(
     val id: Long = 0,
     val callsign: String,
     val cid: String,
+    val realname: String,
     var startTime: LocalDateTime,
     var endTime: LocalDateTime? = null,
 
