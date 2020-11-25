@@ -16,7 +16,7 @@ class DataAggregatorApplication(
     val batchRepository: BatchRepository,
     val flightProcessingService: FlightProcessingService
 ) {
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedRate = 60000)
     fun aggregate() {
         val response = vatsimDataRetrievalService.get()
         batchRepository.save(
