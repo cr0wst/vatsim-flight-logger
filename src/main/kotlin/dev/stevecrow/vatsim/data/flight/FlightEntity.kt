@@ -49,6 +49,7 @@ class FlightEntity(
 @Repository
 interface FlightRepository : JpaRepository<FlightEntity, Long> {
     fun findByCidAndStatus(cid: String, status: FlightEntity.Status): FlightEntity?
+    fun findByCidAndStatusAndStartLocation(cid: String, status: FlightEntity.Status, startLocation: AirportEntity): FlightEntity?
     fun findAllByCallsign(callsign: String): List<FlightEntity>
     fun findAllByStatus(status: FlightEntity.Status): List<FlightEntity>
 }
