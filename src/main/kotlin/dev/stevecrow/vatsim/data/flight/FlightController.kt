@@ -13,4 +13,13 @@ class FlightController(
 
     @GetMapping("/v1/flights/{callsign}")
     fun getCallsign(@PathVariable("callsign") callsign: String) = flightRepository.findAllByCallsign(callsign)
+
+    @GetMapping("/v1/airborne")
+    fun airborne() = flightRepository.findAllByStatus(FlightEntity.Status.IN_FLIGHT)
+
+    @GetMapping("/v1/departing")
+    fun departing() = flightRepository.findAllByStatus(FlightEntity.Status.DEPARTING)
+
+    @GetMapping("/v1/landed")
+    fun landed() = flightRepository.findAllByStatus(FlightEntity.Status.LANDED)
 }
