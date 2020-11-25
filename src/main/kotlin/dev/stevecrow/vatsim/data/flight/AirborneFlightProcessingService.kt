@@ -1,9 +1,11 @@
 package dev.stevecrow.vatsim.data.flight
 
+import dev.stevecrow.vatsim.data.airport.AirportEntity
 import dev.stevecrow.vatsim.data.client.ClientWithLocation
 import dev.stevecrow.vatsim.data.http.Metadata
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class AirborneFlightProcessingService(private val flightRepository: FlightRepository) {
@@ -15,9 +17,11 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
                 throw IllegalArgumentException("Received client that was on the ground.")
             }
 
-            val potentialFlight = retrieveDepartingFlight(it)
-            if (potentialFlight != null) {
+            val potentialFlight = retrieveDepartingFlight(it) ?: retrieveAirborneFlight(it)
+            if (potentialFlight?.status == FlightEntity.Status.DEPARTING) {
                 registerTakeoff(potentialFlight)
+            } else if (potentialFlight?.status == FlightEntity.Status.IN_FLIGHT) {
+                updateAirborneLocation(potentialFlight, it.airport, metadata.updateTimestamp)
             }
         }
     }
@@ -28,9 +32,27 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
         return flightRepository.save(flightEntity)
     }
 
+    private fun updateAirborneLocation(
+        flightEntity: FlightEntity,
+        airportEntity: AirportEntity,
+        time: LocalDateTime
+    ): FlightEntity {
+        flightEntity.endLocation = airportEntity
+        flightEntity.endTime = time
+        log.info { "Updated In Flight Position: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} to ${flightEntity.endLocation!!.code}" }
+        return flightRepository.save(flightEntity)
+    }
+
     /**
      * Try to match the airborne flight with a departing flight at the same location.
      */
-    fun retrieveDepartingFlight(clientWithLocation: ClientWithLocation) =
-        flightRepository.findByCidAndStatusAndStartLocation(clientWithLocation.client.cid, FlightEntity.Status.DEPARTING, clientWithLocation.airport)
+    private fun retrieveDepartingFlight(clientWithLocation: ClientWithLocation) =
+        flightRepository.findByCidAndStatusAndStartLocation(
+            clientWithLocation.client.cid,
+            FlightEntity.Status.DEPARTING,
+            clientWithLocation.airport
+        )
+
+    private fun retrieveAirborneFlight(clientWithLocation: ClientWithLocation) =
+        flightRepository.findByCidAndStatus(clientWithLocation.client.cid, FlightEntity.Status.IN_FLIGHT)
 }
