@@ -19,15 +19,21 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
 
             val potentialFlight = retrieveDepartingFlight(it) ?: retrieveAirborneFlight(it)
             if (potentialFlight?.status == FlightEntity.Status.DEPARTING) {
-                registerTakeoff(potentialFlight)
+                registerTakeoff(potentialFlight, it.airport, metadata.updateTimestamp)
             } else if (potentialFlight?.status == FlightEntity.Status.IN_FLIGHT) {
                 updateAirborneLocation(potentialFlight, it.airport, metadata.updateTimestamp)
             }
         }
     }
 
-    private fun registerTakeoff(flightEntity: FlightEntity): FlightEntity {
+    private fun registerTakeoff(
+        flightEntity: FlightEntity,
+        airportEntity: AirportEntity,
+        time: LocalDateTime
+    ): FlightEntity {
         flightEntity.status = FlightEntity.Status.IN_FLIGHT
+        flightEntity.endLocation = airportEntity
+        flightEntity.endTime = time
         log.info { "Registered takeoff: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} departing ${flightEntity.startLocation.code}" }
         return flightRepository.save(flightEntity)
     }
