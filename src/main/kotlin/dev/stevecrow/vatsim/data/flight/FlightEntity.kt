@@ -3,6 +3,7 @@ package dev.stevecrow.vatsim.data.flight
 import dev.stevecrow.vatsim.data.airport.AirportEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import java.time.Duration
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -34,6 +35,12 @@ class FlightEntity(
     @Enumerated(value = EnumType.STRING)
     var status: Status = Status.UNKNOWN
 ) {
+    val duration
+        get(): Duration? =
+            if (endTime != null) {
+                Duration.between(startTime, endTime)
+            } else null
+
     enum class Status {
         DEPARTING, IN_FLIGHT, LANDED, UNKNOWN
     }

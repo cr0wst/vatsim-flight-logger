@@ -17,6 +17,15 @@ class AirportEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
+    @Column(name = "name")
+    val name: String,
+
+    @Column(name = "iso_country")
+    val country: String,
+
+    @Column(name = "municipality")
+    val municipality: String,
+
     @Column(name = "gps_code")
     val code: String,
 
