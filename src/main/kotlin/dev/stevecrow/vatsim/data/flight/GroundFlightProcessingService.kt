@@ -1,9 +1,11 @@
 package dev.stevecrow.vatsim.data.flight
 
+import dev.stevecrow.vatsim.data.airport.AirportEntity
 import dev.stevecrow.vatsim.data.client.ClientWithLocation
 import dev.stevecrow.vatsim.data.http.Metadata
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import kotlin.math.absoluteValue
 
 @Service
 class GroundFlightProcessingService(private val flightRepository: FlightRepository) {
@@ -20,15 +22,32 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
                 potentialFlight == null -> {
                     registerNewFlight(it, metadata)
                 }
-                potentialFlight.status == FlightEntity.Status.IN_FLIGHT && potentialFlight.endLocation?.id == it.airport.id -> {
+                hasFlightLanded(potentialFlight, it) -> {
                     registerLanding(potentialFlight, it, metadata)
                 }
-                potentialFlight.status == FlightEntity.Status.DEPARTING -> {
+                hasDepartureChanged(potentialFlight, it) -> {
                     changeDeparture(potentialFlight, it, metadata)
                 }
             }
         }
     }
+
+    private fun hasDepartureChanged(flight: FlightEntity, client: ClientWithLocation) =
+        if (flight.status != FlightEntity.Status.DEPARTING) {
+            false
+        } else {
+            !flightIsNearAirport(flight.startLocation, client.airport)
+        }
+
+    private fun hasFlightLanded(flight: FlightEntity, client: ClientWithLocation) =
+        if (flight.endLocation == null || flight.status != FlightEntity.Status.IN_FLIGHT) {
+            false
+        } else {
+            flightIsNearAirport(flight.endLocation!!, client.airport)
+        }
+
+    private fun flightIsNearAirport(flightAirport: AirportEntity, airport: AirportEntity) =
+        flightAirport.id == airport.id || (flightAirport.distance(airport)).absoluteValue <= AIRPORT_BUFFER_DISTANCE
 
     private fun registerNewFlight(clientWithLocation: ClientWithLocation, metadata: Metadata): FlightEntity {
         val flightEntity = FlightEntity(
@@ -40,7 +59,7 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
             status = FlightEntity.Status.DEPARTING
         )
 
-        log.info { "Registered flight: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} departing ${flightEntity.startLocation.code}" }
+        log.info { "[New Flight] ${flightEntity.callsign}:${flightEntity.cid} @ ${flightEntity.startLocation.name} (${flightEntity.startLocation.code})" }
         return flightRepository.save(flightEntity)
     }
 
@@ -52,7 +71,7 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
         flightEntity.endLocation = clientWithLocation.airport
         flightEntity.endTime = metadata.updateTimestamp
         flightEntity.status = FlightEntity.Status.LANDED
-        log.info { "Registered Landing: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} landing ${flightEntity.endLocation!!.code}" }
+        log.info { "[Landing] ${flightEntity.callsign}:${flightEntity.cid}- ${flightEntity.startLocation.name} (${flightEntity.startLocation.code}) => ${flightEntity.endLocation!!.name} (${flightEntity.endLocation!!.code})" }
         return flightRepository.save(flightEntity)
     }
 
@@ -61,10 +80,10 @@ class GroundFlightProcessingService(private val flightRepository: FlightReposito
         clientWithLocation: ClientWithLocation,
         metadata: Metadata
     ): FlightEntity {
+        log.info { "[Departure Change] ${flightEntity.callsign}:${flightEntity.cid}- ${flightEntity.startLocation.name} (${flightEntity.startLocation.code}) => ${clientWithLocation.airport.name} (${clientWithLocation.airport.code})" }
         flightEntity.startLocation = clientWithLocation.airport
         flightEntity.startTime = metadata.updateTimestamp
         flightEntity.status = FlightEntity.Status.DEPARTING
-        log.info { "Changed departure location for: ${flightEntity.id} to ${flightEntity.callsign}:${flightEntity.cid} departing ${flightEntity.startLocation.code}" }
         return flightRepository.save(flightEntity)
     }
 

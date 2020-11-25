@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.Table
+import kotlin.math.pow
 
 @Entity
 @Table(name = "airports")
@@ -36,7 +37,10 @@ class AirportEntity(
 
     @Column(name = "elevation_ft")
     val elevation: Int = 0
-)
+) {
+    fun distance(airport: AirportEntity) =
+        ((airport.latitude - latitude).pow(2) + (airport.longitude - longitude).pow(2)).pow(0.5F)
+}
 
 @Repository
 interface AirportRepository : JpaRepository<AirportEntity, Long>

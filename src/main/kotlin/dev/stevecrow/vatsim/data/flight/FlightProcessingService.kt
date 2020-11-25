@@ -9,6 +9,11 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import kotlin.math.pow
 
+// Sometimes airports can transition from air to ground can be over
+// another airport. We need to buffer the range of acceptable transition airports.
+// Theoretically they shouldn't be this far out between pulls.
+const val AIRPORT_BUFFER_DISTANCE = 4
+
 @Service
 class FlightProcessingService(
     private val groundFlightProcessingService: GroundFlightProcessingService,
@@ -22,17 +27,15 @@ class FlightProcessingService(
         log.info { "Processing batch (${batch.metadata.updateTimestamp}) with ${batch.clients.size} clients." }
         val clientsWithLocations = pairClientsWithLocations(batch.clients.filter { it.clientType == Client.Type.PILOT })
         val (ground, air) = clientsWithLocations.partition { it.position == ClientWithLocation.Position.GROUND }
-
+        log.info { "Ground: ${ground.size} | Air: ${air.size}" }
         groundFlightProcessingService.process(batch.metadata, ground)
         airborneFlightProcessingService.process(batch.metadata, air)
+        log.info { "Batch (${batch.metadata.updateTimestamp}) finished." }
     }
 
     private fun pairClientsWithLocations(clients: List<Client>) =
         clients.map {
-            ClientWithLocation(
-                it,
-                findNearestAirport(it.latitude, it.longitude)
-            )
+            ClientWithLocation(it, findNearestAirport(it.latitude, it.longitude))
         }
 
     private fun findNearestAirport(latitude: Float, longitude: Float): AirportEntity {
