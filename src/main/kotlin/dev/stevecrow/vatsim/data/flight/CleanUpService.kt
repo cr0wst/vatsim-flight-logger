@@ -11,7 +11,6 @@ class CleanUpService(
 ) {
     private val log = KotlinLogging.logger {}
 
-    @Scheduled(fixedRate = 600000)
     @Transactional
     fun clean() {
         log.info { "[Clean] Starting Clean Up " }
