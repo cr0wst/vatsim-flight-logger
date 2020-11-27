@@ -2,6 +2,8 @@ package dev.stevecrow.vatsim.data.flight
 
 import dev.stevecrow.vatsim.data.airport.AirportEntity
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.LocalDateTime
@@ -49,7 +51,23 @@ class FlightEntity(
 @Repository
 interface FlightRepository : JpaRepository<FlightEntity, Long> {
     fun findByCidAndStatus(cid: String, status: FlightEntity.Status): FlightEntity?
-    fun findByCidAndStatusAndStartLocation(cid: String, status: FlightEntity.Status, startLocation: AirportEntity): FlightEntity?
+    fun findByCidAndStatusAndStartLocation(
+        cid: String,
+        status: FlightEntity.Status,
+        startLocation: AirportEntity
+    ): FlightEntity?
+
     fun findAllByCallsign(callsign: String): List<FlightEntity>
     fun findAllByStatus(status: FlightEntity.Status): List<FlightEntity>
+
+    @Query(value = "delete from FlightEntity where callsign not in ?1 and status in ('IN_FLIGHT', 'DEPARTING')")
+    @Modifying
+    fun cancelFlightsAndDepartures(callsigns: List<String>): Int
+
+    @Query(
+        nativeQuery = true,
+        value = "delete from flights where (status = 'DEPARTING' and start_time < (now() - '1 hours'\\:\\:interval)) or (status = 'IN_FLIGHT' and end_time < (now() - '1 days'\\:\\:interval))"
+    )
+    @Modifying
+    fun deleteOldFlights(): Int
 }

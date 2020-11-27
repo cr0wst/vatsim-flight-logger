@@ -18,6 +18,7 @@ const val AIRPORT_BUFFER_DISTANCE = 4
 class FlightProcessingService(
     private val groundFlightProcessingService: GroundFlightProcessingService,
     private val airborneFlightProcessingService: AirborneFlightProcessingService,
+    private val disconnectedFlightProcessingService: DisconnectedFlightProcessingService,
     private val airportRepository: AirportRepository
 ) {
     private val log = KotlinLogging.logger {}
@@ -25,11 +26,15 @@ class FlightProcessingService(
 
     fun process(batch: Batch) {
         log.info { "Processing batch (${batch.metadata.updateTimestamp}) with ${batch.clients.size} clients." }
+        disconnectedFlightProcessingService.process(batch)
+
         val clientsWithLocations = pairClientsWithLocations(batch.clients.filter { it.clientType == Client.Type.PILOT })
         val (ground, air) = clientsWithLocations.partition { it.position == ClientWithLocation.Position.GROUND }
+
         log.info { "Ground: ${ground.size} | Air: ${air.size}" }
         groundFlightProcessingService.process(batch.metadata, ground)
         airborneFlightProcessingService.process(batch.metadata, air)
+
         log.info { "Batch (${batch.metadata.updateTimestamp}) finished." }
     }
 

@@ -2,6 +2,7 @@ package dev.stevecrow.vatsim.data
 
 import dev.stevecrow.vatsim.data.batch.BatchEntity
 import dev.stevecrow.vatsim.data.batch.BatchRepository
+import dev.stevecrow.vatsim.data.flight.CleanUpService
 import dev.stevecrow.vatsim.data.flight.FlightProcessingService
 import dev.stevecrow.vatsim.data.http.VatsimDataRetrievalService
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -12,9 +13,10 @@ import org.springframework.scheduling.annotation.Scheduled
 @SpringBootApplication
 @EnableScheduling
 class DataAggregatorApplication(
-    val vatsimDataRetrievalService: VatsimDataRetrievalService,
-    val batchRepository: BatchRepository,
-    val flightProcessingService: FlightProcessingService
+    private val vatsimDataRetrievalService: VatsimDataRetrievalService,
+    private val batchRepository: BatchRepository,
+    private val flightProcessingService: FlightProcessingService,
+    private val cleanUpService: CleanUpService
 ) {
     @Scheduled(fixedRate = 60000)
     fun aggregate() {
