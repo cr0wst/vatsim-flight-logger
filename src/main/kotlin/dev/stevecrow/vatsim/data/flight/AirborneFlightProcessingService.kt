@@ -66,11 +66,7 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
      * Try to match the airborne flight with a departing flight at the same location.
      */
     private fun retrieveDepartingFlight(clientWithLocation: ClientWithLocation) =
-        flightRepository.findByCidAndStatusAndStartLocation(
-            clientWithLocation.client.cid,
-            FlightEntity.Status.DEPARTING,
-            clientWithLocation.airport
-        )
+        flightRepository.findByCidAndStatus(clientWithLocation.client.cid, FlightEntity.Status.DEPARTING)
 
     private fun retrieveAirborneFlight(clientWithLocation: ClientWithLocation) =
         flightRepository.findByCidAndStatus(clientWithLocation.client.cid, FlightEntity.Status.IN_FLIGHT)
