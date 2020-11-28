@@ -12,7 +12,7 @@ import kotlin.math.pow
 // Sometimes airports can transition from air to ground can be over
 // another airport. We need to buffer the range of acceptable transition airports.
 // Theoretically they shouldn't be this far out between pulls.
-const val AIRPORT_BUFFER_DISTANCE = 4
+const val AIRPORT_BUFFER_DISTANCE = 10
 
 @Service
 class FlightProcessingService(
