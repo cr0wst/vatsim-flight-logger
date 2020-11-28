@@ -34,7 +34,7 @@ class AirborneFlightProcessingService(private val flightRepository: FlightReposi
     private fun hasInFlightLocationChanged(flight: FlightEntity, client: ClientWithLocation) =
         (flight.status == FlightEntity.Status.IN_FLIGHT && flight.endLocation != null && flight.endLocation?.id != client.airport.id)
 
-    private fun hasFlightDeparted(flight: FlightEntity, client: ClientWithLocation) = flight.status == FlightEntity.Status.DEPARTING)
+    private fun hasFlightDeparted(flight: FlightEntity, client: ClientWithLocation) = flight.status == FlightEntity.Status.DEPARTING
 
     private fun flightIsNearAirport(flightAirport: AirportEntity, airport: AirportEntity) =
         flightAirport.id == airport.id || (flightAirport.distance(airport)).absoluteValue <= AIRPORT_BUFFER_DISTANCE
