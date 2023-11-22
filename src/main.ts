@@ -64,7 +64,8 @@ async function run() {
           name: arrival.name,
           departure: arrival.departure,
           arrival: arrival.arrival,
-          status: "Processed"
+          status: "Processed",
+          departure_color: color
         });
       } else {
         log.info(`Can't resolve source and destination for ${arrival.departure_artcc} to ${arrival.arrival_artcc}`);
