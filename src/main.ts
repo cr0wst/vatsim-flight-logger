@@ -16,6 +16,7 @@ async function main() {
 async function run() {
   log.info("Fetching Pilot Data");
   const data = await fetchData();
+  await db("flights").del();
   await db("flights").insert(
     data.pilots.filter((pilot) => pilot.flight_plan?.departure && pilot.flight_plan?.arrival)
       .map((pilot) => ({
@@ -78,7 +79,6 @@ async function run() {
       await db("units").update(unit).where("artcc", unit.artcc);
     });
   }
-  await db("flights").del();
 }
 
 function calculateColor(units: any) {
