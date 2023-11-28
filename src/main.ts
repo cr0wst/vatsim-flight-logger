@@ -86,16 +86,44 @@ function calculateColor(units: any) {
   const green = units.green;
   const blue = units.blue;
 
+  // return the color with the most units. If there is a tie between two colors for the lead, randomly pick one.
+  // If all colors are tied at 0, return gray, which means no units are available.
+  // If all colors are tied above 0 return a random color.
   if (red > green && red > blue) {
     return "red";
-  } else if (green > red && green > blue) {
-    return "green";
-  } else if (blue > red && blue > green) {
-    return "blue";
-  } else {
-    return "gray";
   }
+
+  if (green > red && green > blue) {
+    return "green";
+  }
+
+  if (blue > red && blue > green) {
+    return "blue";
+  }
+
+  if (red === green && red > blue) {
+    return ["red", "green"][Math.floor(Math.random() * 2)];
+  }
+
+  if (red === blue && red > green) {
+    return ["red", "blue"][Math.floor(Math.random() * 2)];
+  }
+
+  if (green === blue && green > red) {
+    return ["green", "blue"][Math.floor(Math.random() * 2)];
+  }
+
+  if (red === green && red === blue && red > 0) {
+    return ["red", "green", "blue"][Math.floor(Math.random() * 3)];
+  }
+
+  if (red === blue && red === green && red > 0) {
+    return ["red", "green", "blue"][Math.floor(Math.random() * 3)];
+  }
+
+  return "gray";
 }
+
 
 main().catch((err) => {
   log.error(err);
