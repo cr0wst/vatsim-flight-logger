@@ -19,6 +19,7 @@ type VatsimData = {
     longitude: number,
     altitude: number,
     groundspeed: number,
+    heading: number,
     flight_plan: {
       departure: string,
       arrival: string,

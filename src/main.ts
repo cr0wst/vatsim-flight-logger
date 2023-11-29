@@ -28,7 +28,8 @@ async function run() {
         altitude: pilot.altitude,
         groundspeed: pilot.groundspeed,
         departure: pilot.flight_plan.departure,
-        arrival: pilot.flight_plan.arrival
+        arrival: pilot.flight_plan.arrival,
+        heading: pilot.heading,
       })));
 
   log.info("Fetching Calculated Arrivals");
